@@ -1,0 +1,36 @@
+@page
+@model IndexModel
+@{ ViewData["Title"] = Model.Topic.Title; }
+
+@if (TempData["Msg"] is string msg) { <p class="msg">@msg</p> }
+
+<h1>@Model.Topic.Title</h1>
+<p class="muted">Гласуването приключва на @Model.Topic.EndsOn.AddDays(-1).ToString("dd.MM.yyyy"). Един глас на човек седмично.</p>
+
+@if (Model.Rows.Count == 0)
+{
+    <p>Все още няма номинации. Бъдете първите!</p>
+}
+else
+{
+    <ol class="rows">
+    @foreach (var r in Model.Rows)
+    {
+        <li>
+            <div><strong>@r.Name</strong> <span class="muted">@r.Neighborhood</span></div>
+            <form method="post" asp-page-handler="Vote">
+                <input type="hidden" name="nominationId" value="@r.NominationId" />
+                <span>@r.Votes гласа</span>
+                <button type="submit">Гласувай</button>
+            </form>
+        </li>
+    }
+    </ol>
+}
+
+<h2>Номинирай място</h2>
+<form method="post" asp-page-handler="Nominate">
+    <input type="text" asp-for="Name" placeholder="Име на мястото" required maxlength="80" />
+    <input type="text" asp-for="Neighborhood" placeholder="Квартал (по избор)" maxlength="60" />
+    <button type="submit">Номинирай</button>
+</form>

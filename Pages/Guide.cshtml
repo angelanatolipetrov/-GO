@@ -1,0 +1,21 @@
+@page
+@model GuideModel
+@{ ViewData["Title"] = "Градски гид"; }
+
+<h1>Градски гид</h1>
+<p class="muted">Победителите от предишните седмици, избрани от местните.</p>
+
+@if (Model.Entries.Count == 0)
+{
+    <p>Първите резултати ще се появят след края на първата седмица.</p>
+}
+@foreach (var e in Model.Entries)
+{
+    <h2>@e.Title <span class="muted">(@e.EndsOn.Year)</span></h2>
+    <ol>
+        @foreach (var r in e.Top)
+        {
+            <li><strong>@r.Name</strong> <span class="muted">@r.Neighborhood · @r.Votes гласа</span></li>
+        }
+    </ol>
+}

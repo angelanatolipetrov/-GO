@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] – Най-доброто в града</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 720px; margin: 0 auto; padding: 1rem; line-height: 1.5; }
+        nav a { margin-right: 1rem; text-decoration: none; font-weight: 600; }
+        .muted { color: #6b7280; font-size: .9rem; }
+        .msg { background: #ecfdf5; border: 1px solid #a7f3d0; padding: .6rem 1rem; border-radius: 8px; }
+        ol.rows { list-style: none; padding: 0; }
+        ol.rows li { display: flex; justify-content: space-between; align-items: center; padding: .6rem 0; border-bottom: 1px solid #e5e7eb; }
+        ol.rows form { display: flex; gap: .6rem; align-items: center; margin: 0; }
+        input[type=text] { padding: .4rem; margin-right: .4rem; }
+        button { padding: .4rem .9rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <nav><a asp-page="/Index">Тази седмица</a><a asp-page="/Guide">Градски гид</a></nav>
+    @RenderBody()
+</body>
+</html>
