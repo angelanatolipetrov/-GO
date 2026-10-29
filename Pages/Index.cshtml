@@ -1,36 +1,123 @@
 @page
 @model IndexModel
-@{ ViewData["Title"] = Model.Topic.Title; }
+@{
+    var title = L.Pick(Model.Topic.Title, Model.Topic.TitleEn);
+    ViewData["Title"] = title;
+    var loggedIn = Model.UserId != null;
+    var req = ViewContext.HttpContext.Request;
+    var back = req.Path.Value + req.QueryString.Value;
+    var medals = new[] { "🥇", "🥈", "🥉" };
+    var rank = 0;
+    var endIso = Model.Topic.EndsOn.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
+}
 
 @if (TempData["Msg"] is string msg) { <p class="msg">@msg</p> }
 
-<h1>@Model.Topic.Title</h1>
-<p class="muted">Гласуването приключва на @Model.Topic.EndsOn.AddDays(-1).ToString("dd.MM.yyyy"). Един глас на човек седмично.</p>
+<section class="hero">
+    <p class="eyebrow">@L["nav.week"]</p>
+    <h1>@title</h1>
+    <div class="hero-meta">
+        <span class="chip">⏳ @L["home.endsIn"] <b data-countdown="@endIso" data-d="@L["unit.d"]" data-h="@L["unit.h"]" data-m="@L["unit.m"]"></b></span>
+        <span class="chip">🗳 <b>@Model.Total</b> @L["votes"]</span>
+        <span class="chip">📍 <b>@Model.Rows.Count</b> @L["home.places"]</span>
+    </div>
+    <p class="muted">@L.Format("home.closes", Model.Topic.EndsOn.AddDays(-1).ToString("d MMMM yyyy", L.Culture))</p>
+    <button type="button" class="btn ghost" data-share data-title="@title" data-copied="@L["share.copied"]">🔗 @L["share.btn"]</button>
+</section>
+
+@if (Model.LastWinner is { Top.Count: > 0 } lw)
+{
+    <p class="winner">👑 @L["home.lastWinner"] – <i>@L.Pick(lw.Title, lw.TitleEn)</i>: <b>@lw.Top[0].Name</b></p>
+}
+
+@if (Model.Neighborhoods.Count > 0)
+{
+    <div class="pills">
+        <a asp-page="/Index" class="@(string.IsNullOrEmpty(Model.Hood) ? "on" : "")">@L["home.all"]</a>
+        @foreach (var h in Model.Neighborhoods)
+        {
+            <a asp-page="/Index" asp-route-hood="@h" class="@(Model.Hood == h ? "on" : "")">@h</a>
+        }
+    </div>
+}
 
 @if (Model.Rows.Count == 0)
 {
-    <p>Все още няма номинации. Бъдете първите!</p>
+    <p class="card">@L["home.empty"]</p>
 }
 else
 {
-    <ol class="rows">
+    <input type="search" class="search" data-filter="#rows" placeholder="@L["search.ph"]" />
+    <ol class="rows" id="rows">
     @foreach (var r in Model.Rows)
     {
-        <li>
-            <div><strong>@r.Name</strong> <span class="muted">@r.Neighborhood</span></div>
-            <form method="post" asp-page-handler="Vote">
+        rank++;
+        var pct = Model.Total == 0 ? 0 : r.Votes * 100 / Model.Total;
+        var isTop = r.Votes > 0 && rank <= 3;
+        <li class="row @(Model.MyVote == r.NominationId ? "mine" : "") @(isTop ? "top" : "")">
+            <div class="rank">@(isTop ? medals[rank - 1] : rank.ToString())</div>
+            <div>
+                <div class="name"><strong>@r.Name</strong>@if (!string.IsNullOrEmpty(r.Neighborhood)) { <span class="chip small">@r.Neighborhood</span> }</div>
+                <div class="bar"><span style="width:@pct%"></span></div>
+            </div>
+            <form method="post" class="vote" asp-page-handler="Vote" asp-route-hood="@Model.Hood">
                 <input type="hidden" name="nominationId" value="@r.NominationId" />
-                <span>@r.Votes гласа</span>
-                <button type="submit">Гласувай</button>
+                <span class="count">@r.Votes</span>
+                @if (!loggedIn)
+                {
+                    <a class="btn" asp-page="/Account/Login" asp-route-returnUrl="@back">@L["btn.loginToVote"]</a>
+                }
+                else if (Model.MyVote == r.NominationId)
+                {
+                    <button type="button" class="primary" disabled>@L["btn.voted"]</button>
+                }
+                else
+                {
+                    <button type="submit" class="primary" disabled="@(Model.MyVote != null)">@L["btn.vote"]</button>
+                }
             </form>
         </li>
     }
     </ol>
 }
 
-<h2>Номинирай място</h2>
-<form method="post" asp-page-handler="Nominate">
-    <input type="text" asp-for="Name" placeholder="Име на мястото" required maxlength="80" />
-    <input type="text" asp-for="Neighborhood" placeholder="Квартал (по избор)" maxlength="60" />
-    <button type="submit">Номинирай</button>
-</form>
+<h2>@L["nom.h"]</h2>
+@if (!loggedIn)
+{
+    <p class="card"><a asp-page="/Account/Login" asp-route-returnUrl="@back">@L["nom.login"]</a></p>
+}
+else
+{
+    <form method="post" class="card nominate" asp-page-handler="Nominate" asp-route-hood="@Model.Hood">
+        <select asp-for="Choice" class="grow" data-place-select data-other-target="#other-fields">
+            <option value="">@L["nom.choose"]</option>
+            @foreach (var g in BestInTown.Data.PlaceCatalog.All
+                .Where(p => !Model.Nominated.Contains(p.Name.ToUpperInvariant()))
+                .GroupBy(p => p.Category))
+            {
+                <optgroup label="@L["cat." + g.Key]">
+                    @foreach (var p in g)
+                    {
+                        <option value="@p.Name">@p.Name@(p.Neighborhood != null ? " · " + p.Neighborhood : "")</option>
+                    }
+                </optgroup>
+            }
+            <option value="@IndexModel.OtherChoice">@L["nom.other"]</option>
+        </select>
+        <div id="other-fields" class="other">
+            <input type="text" asp-for="Name" placeholder="@L["nom.name"]" maxlength="80" />
+            @if (Model.AllowedNeighborhoods.Length > 0)
+            {
+                <select asp-for="Neighborhood">
+                    <option value="">@L["nom.hoodSelect"]</option>
+                    @foreach (var h in Model.AllowedNeighborhoods) { <option value="@h">@h</option> }
+                </select>
+            }
+            else
+            {
+                <input type="text" asp-for="Neighborhood" placeholder="@L["nom.hood"]" maxlength="60" />
+            }
+        </div>
+        <button type="submit" class="primary">@L["nom.btn"]</button>
+    </form>
+}

@@ -1,0 +1,19 @@
+@page
+@model BestInTown.Pages.Account.LoginModel
+@{ ViewData["Title"] = L["login.h"]; }
+
+<h1>@L["login.h"]</h1>
+
+@if (TempData["Msg"] is string msg) { <p class="msg">@msg</p> }
+@if (Model.Error != null) { <div class="errors"><p>@Model.Error</p></div> }
+
+<form method="post" class="stack" asp-route-returnUrl="@Model.ReturnUrl">
+    <label asp-for="Email">@L["acct.email"]</label>
+    <input asp-for="Email" type="email" autocomplete="email" required />
+    <label asp-for="Password">@L["acct.password"]</label>
+    <input asp-for="Password" type="password" autocomplete="current-password" required />
+    <p><label><input type="checkbox" asp-for="RememberMe" /> @L["acct.remember"]</label></p>
+    <button type="submit">@L["login.btn"]</button>
+</form>
+
+<p class="muted">@L["login.noacct"] <a asp-page="/Account/Register" asp-route-returnUrl="@Model.ReturnUrl">@L["nav.register"]</a></p>

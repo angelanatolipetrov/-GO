@@ -1,21 +1,32 @@
 @page
 @model GuideModel
-@{ ViewData["Title"] = "Градски гид"; }
+@{
+    ViewData["Title"] = L["guide.h"];
+    var medals = new[] { "🥇", "🥈", "🥉" };
+}
 
-<h1>Градски гид</h1>
-<p class="muted">Победителите от предишните седмици, избрани от местните.</p>
+<h1>@L["guide.h"]</h1>
+<p class="muted">@L["guide.sub"]</p>
 
 @if (Model.Entries.Count == 0)
 {
-    <p>Първите резултати ще се появят след края на първата седмица.</p>
+    <p class="card">@L["guide.empty"]</p>
 }
 @foreach (var e in Model.Entries)
 {
-    <h2>@e.Title <span class="muted">(@e.EndsOn.Year)</span></h2>
-    <ol>
-        @foreach (var r in e.Top)
-        {
-            <li><strong>@r.Name</strong> <span class="muted">@r.Neighborhood · @r.Votes гласа</span></li>
-        }
-    </ol>
+    var i = 0;
+    <section class="card" style="margin-bottom:1rem">
+        <h2>@L.Pick(e.Title, e.TitleEn) <span class="chip small">@e.EndsOn.AddDays(-1).ToString("MMM yyyy", L.Culture)</span></h2>
+        <ol class="podium">
+            @foreach (var r in e.Top)
+            {
+                <li>
+                    <span class="rank">@medals[i++]</span>
+                    <strong>@r.Name</strong>
+                    @if (!string.IsNullOrEmpty(r.Neighborhood)) { <span class="chip small">@r.Neighborhood</span> }
+                    <span class="count">@r.Votes @L["votes"]</span>
+                </li>
+            }
+        </ol>
+    </section>
 }

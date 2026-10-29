@@ -1,23 +1,43 @@
+@{
+    var req = ViewContext.HttpContext.Request;
+    var back = Uri.EscapeDataString(req.Path.Value + req.QueryString.Value);
+}
 <!DOCTYPE html>
-<html lang="bg">
+<html lang="@L.Lang">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] – Най-доброто в града</title>
-    <style>
-        body { font-family: system-ui, sans-serif; max-width: 720px; margin: 0 auto; padding: 1rem; line-height: 1.5; }
-        nav a { margin-right: 1rem; text-decoration: none; font-weight: 600; }
-        .muted { color: #6b7280; font-size: .9rem; }
-        .msg { background: #ecfdf5; border: 1px solid #a7f3d0; padding: .6rem 1rem; border-radius: 8px; }
-        ol.rows { list-style: none; padding: 0; }
-        ol.rows li { display: flex; justify-content: space-between; align-items: center; padding: .6rem 0; border-bottom: 1px solid #e5e7eb; }
-        ol.rows form { display: flex; gap: .6rem; align-items: center; margin: 0; }
-        input[type=text] { padding: .4rem; margin-right: .4rem; }
-        button { padding: .4rem .9rem; cursor: pointer; }
-    </style>
+    <meta name="theme-color" content="#d97706" />
+    <title>@ViewData["Title"] – @L["site.name"]</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    <nav><a asp-page="/Index">Тази седмица</a><a asp-page="/Guide">Градски гид</a></nav>
-    @RenderBody()
+    <header class="top"><div class="top-in">
+        <a class="brand" asp-page="/Index">🏆 @L["site.name"]</a>
+        <nav class="menu">
+            <a asp-page="/Index">@L["nav.week"]</a>
+            <a asp-page="/Guide">@L["nav.guide"]</a>
+        </nav>
+        <div class="tools">
+            <span class="lang">
+                <a href="/lang/bg?returnUrl=@back" class="@(L.Lang == "bg" ? "on" : "")">BG</a><a href="/lang/en?returnUrl=@back" class="@(L.Lang == "en" ? "on" : "")">EN</a>
+            </span>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <span class="muted">@User.Identity.Name</span>
+                <form method="post" asp-page="/Account/Logout" class="inline">
+                    <button type="submit" class="linkbtn">@L["nav.logout"]</button>
+                </form>
+            }
+            else
+            {
+                <a class="btn" asp-page="/Account/Login">@L["nav.login"]</a>
+                <a class="btn primary" asp-page="/Account/Register">@L["nav.register"]</a>
+            }
+        </div>
+    </div></header>
+    <main class="wrap">@RenderBody()</main>
+    <footer class="foot">@L["footer"]</footer>
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
 </body>
 </html>

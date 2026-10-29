@@ -3,9 +3,10 @@ namespace BestInTown.Models;
 public class Topic
 {
     public int Id { get; set; }
-    public string Title { get; set; } = "";
-    public DateTime StartsOn { get; set; }   // Monday 00:00 UTC
-    public DateTime EndsOn { get; set; }     // next Monday 00:00 UTC (exclusive)
+    public string Title { get; set; } = "";      // Bulgarian
+    public string? TitleEn { get; set; }         // English
+    public DateTime StartsOn { get; set; }       // Monday 00:00 UTC
+    public DateTime EndsOn { get; set; }         // next Monday 00:00 UTC (exclusive)
     public List<Nomination> Nominations { get; set; } = new();
 }
 
@@ -24,6 +25,7 @@ public class Nomination
     public Topic Topic { get; set; } = null!;
     public int PlaceId { get; set; }
     public Place Place { get; set; } = null!;
+    public string NominatorKey { get; set; } = "";     // user id
     public List<Vote> Votes { get; set; } = new();
 }
 
@@ -33,7 +35,7 @@ public class Vote
     public int NominationId { get; set; }
     public Nomination Nomination { get; set; } = null!;
     public int TopicId { get; set; }
-    public string VoterKey { get; set; } = "";   // anonymous cookie id (swap for a user id once you add accounts)
+    public string VoterKey { get; set; } = "";         // user id
     public string IpHash { get; set; } = "";
     public DateTime CastAt { get; set; }
 }
@@ -49,6 +51,7 @@ public class LeaderboardRow
 public class GuideEntry
 {
     public string Title { get; set; } = "";
+    public string? TitleEn { get; set; }
     public DateTime EndsOn { get; set; }
     public List<LeaderboardRow> Top { get; set; } = new();
 }

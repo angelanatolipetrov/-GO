@@ -1,0 +1,30 @@
+@page
+@model BestInTown.Pages.Admin.IndexModel
+@{ ViewData["Title"] = L["admin.h"]; }
+
+<h1>@L["admin.h"]</h1>
+
+<h2>@L["admin.topic"]</h2>
+<form method="post" asp-page-handler="Rename">
+    <input type="hidden" name="id" value="@Model.Topic.Id" />
+    <input type="text" name="title" value="@Model.Topic.Title" placeholder="@L["admin.titleBg"]" maxlength="120" size="36" />
+    <input type="text" name="titleEn" value="@Model.Topic.TitleEn" placeholder="@L["admin.titleEn"]" maxlength="120" size="36" />
+    <button type="submit">@L["admin.save"]</button>
+</form>
+
+<h2>@L["admin.noms"]</h2>
+@if (Model.Rows.Count == 0) { <p class="muted">@L["admin.none"]</p> }
+<ol class="rows">
+@foreach (var r in Model.Rows)
+{
+    <li>
+        <div class="row-top">
+            <div><strong>@r.Name</strong> <span class="muted">@r.Neighborhood · @r.Votes @L["votes"]</span></div>
+            <form method="post" class="inline" asp-page-handler="Delete">
+                <input type="hidden" name="id" value="@r.NominationId" />
+                <button type="submit">@L["admin.delete"]</button>
+            </form>
+        </div>
+    </li>
+}
+</ol>

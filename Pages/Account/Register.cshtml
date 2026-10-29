@@ -1,0 +1,24 @@
+@page
+@model BestInTown.Pages.Account.RegisterModel
+@{ ViewData["Title"] = L["reg.h"]; }
+
+<h1>@L["reg.h"]</h1>
+
+@if (Model.Errors.Count > 0)
+{
+    <div class="errors">
+        @foreach (var e in Model.Errors) { <p>@e</p> }
+    </div>
+}
+
+<form method="post" class="stack" asp-route-returnUrl="@Model.ReturnUrl">
+    <label asp-for="Email">@L["acct.email"]</label>
+    <input asp-for="Email" type="email" autocomplete="email" required />
+    <label asp-for="Password">@L["acct.password"]</label>
+    <input asp-for="Password" type="password" autocomplete="new-password" required />
+    <label asp-for="ConfirmPassword">@L["acct.confirm"]</label>
+    <input asp-for="ConfirmPassword" type="password" autocomplete="new-password" required />
+    <p><button type="submit">@L["reg.btn"]</button></p>
+</form>
+
+<p class="muted">@L["reg.have"] <a asp-page="/Account/Login" asp-route-returnUrl="@Model.ReturnUrl">@L["nav.login"]</a></p>
