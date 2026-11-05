@@ -11,7 +11,9 @@ builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<Loc>();
 builder.Services.AddScoped<VotingService>();
-builder.Services.AddSingleton<DnsClient.ILookupClient>(new DnsClient.LookupClient(new DnsClient.LookupClientOptions
+// Public resolvers: the PC/router DNS on Windows is often unreliable for MX lookups.
+builder.Services.AddSingleton<DnsClient.ILookupClient>(new DnsClient.LookupClient(new DnsClient.LookupClientOptions(
+    DnsClient.NameServer.Cloudflare, DnsClient.NameServer.GooglePublicDns)
 {
     Timeout = TimeSpan.FromSeconds(3),
     Retries = 1,

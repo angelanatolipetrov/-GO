@@ -1,4 +1,7 @@
+using System.Net;
 using System.Net.Mail;
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using DnsClient;
 
 namespace BestInTown.Services;
@@ -43,10 +46,15 @@ public class EmailChecker(ILookupClient dns, ILogger<EmailChecker> log)
     // skipTypo: the user already saw the "did you mean" hint and kept their address.
     public async Task<EmailCheck> CheckAsync(string email, bool skipTypo = false, CancellationToken ct = default)
     {
-        if (!MailAddress.TryCreate(email, out var parsed) || parsed.Address != email || !parsed.Host.Contains('.'))
+        if (!MailAddress.TryCreate(email, out var parsed) || parsed.Address != email)
             return new("err.email");
 
-        var domain = parsed.Host.ToLowerInvariant().TrimEnd('.');
+        var domain = parsed.Host.ToLowerInvariant();
+        // Plain domain with a real-looking ending: "abv.bg", "mail.co.uk", not "a@b", "x@y.1" or "x@[1.2.3.4]".
+        if (!Regex.IsMatch(domain, @"^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z]{2,24}|xn--[a-z0-9-]{2,59})$")
+            || !Regex.IsMatch(parsed.User, @"^[A-Za-z0-9._%+'-]{1,64}$") || parsed.User.StartsWith('.') || parsed.User.Contains(".."))
+            return new("err.email");
+
         if (Disposable.Contains(domain)) return new("err.email.disposable");
 
         if (!skipTypo && !KnownGood.Contains(domain) && !Popular.Contains(domain))
@@ -63,27 +71,49 @@ public class EmailChecker(ILookupClient dns, ILogger<EmailChecker> log)
         try
         {
             var mx = await dns.QueryAsync(domain, QueryType.MX, cancellationToken: ct);
-            if (mx.Header.ResponseCode == DnsHeaderResponseCode.NotExistentDomain) return new("err.email.domain");
-            if (mx.HasError) return EmailCheck.Valid;   // server failure etc. – don't guess
+            if (mx.Header.ResponseCode == DnsHeaderResponseCode.NotExistentDomain) return Log(domain, "no such domain", new("err.email.domain"));
+            if (!mx.HasError)
+            {
+                var servers = mx.Answers.MxRecords().ToList();
+                // "Null MX" (RFC 7505): the domain says it accepts no mail.
+                if (servers.Count == 1 && servers[0].Exchange.Value is "." or "") return Log(domain, "null MX", new("err.email.domain"));
+                if (servers.Count > 0) return Log(domain, "has MX", EmailCheck.Valid);
 
-            var servers = mx.Answers.MxRecords().ToList();
-            // "Null MX" (RFC 7505): the domain says it accepts no mail.
-            if (servers.Count == 1 && servers[0].Exchange.Value is "." or "") return new("err.email.domain");
-            if (servers.Count > 0) return EmailCheck.Valid;
-
-            // No MX: mail falls back to the domain's own address (RFC 5321), so an A/AAAA record is enough.
-            var a = await dns.QueryAsync(domain, QueryType.A, cancellationToken: ct);
-            if (a.Answers.ARecords().Any()) return EmailCheck.Valid;
-            var aaaa = await dns.QueryAsync(domain, QueryType.AAAA, cancellationToken: ct);
-            return aaaa.Answers.AaaaRecords().Any() || a.HasError || aaaa.HasError ? EmailCheck.Valid : new("err.email.domain");
+                // No MX: mail falls back to the domain's own address (RFC 5321), so an A record is enough.
+                var a = await dns.QueryAsync(domain, QueryType.A, cancellationToken: ct);
+                if (!a.HasError) return a.Answers.ARecords().Any()
+                    ? Log(domain, "no MX, has A", EmailCheck.Valid)
+                    : Log(domain, "no mail server", new("err.email.domain"));
+            }
+            log.LogWarning("DNS error {Code} for {Domain}, using system lookup", mx.Header.ResponseCode, domain);
         }
         catch (Exception ex)
         {
-            // DNS is down, slow or unreachable (DnsClient reports timeouts as cancellations):
-            // don't block real people because of our network problem.
-            log.LogWarning(ex, "MX lookup failed for {Domain}", domain);
+            log.LogWarning(ex, "DNS lookup failed for {Domain}, using system lookup", domain);
+        }
+
+        // Fallback: the operating system's own resolver. It can at least tell a domain that doesn't exist.
+        try
+        {
+            var addrs = await Dns.GetHostAddressesAsync(domain, ct);
+            return addrs.Length > 0 ? Log(domain, "system lookup ok", EmailCheck.Valid) : Log(domain, "system lookup empty", new("err.email.domain"));
+        }
+        catch (SocketException ex) when (ex.SocketErrorCode is SocketError.HostNotFound or SocketError.NoData)
+        {
+            return Log(domain, "system lookup: not found", new("err.email.domain"));
+        }
+        catch (Exception ex)
+        {
+            // No DNS at all (offline?): don't block real people because of our network problem.
+            log.LogWarning(ex, "System lookup failed for {Domain}; accepting", domain);
             return EmailCheck.Valid;
         }
+    }
+
+    private EmailCheck Log(string domain, string reason, EmailCheck result)
+    {
+        log.LogInformation("Email domain {Domain}: {Reason} -> {Result}", domain, reason, result.Ok ? "ok" : result.ErrorKey);
+        return result;
     }
 
     private static int Distance(string a, string b)
