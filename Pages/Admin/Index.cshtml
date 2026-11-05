@@ -29,6 +29,22 @@
     <button type="submit" class="primary">@L["admin.uploadCover"]</button>
 </form>
 
+<h2>@L["admin.card"]</h2>
+<p class="muted">@L["admin.cardHint"]</p>
+@if (Photos.CardUrl(Model.Topic.Id) is string card)
+{
+    <p><img src="@card" alt="" class="cover-preview" /></p>
+    <form method="post" asp-page-handler="DeleteCard" class="inline">
+        <input type="hidden" name="id" value="@Model.Topic.Id" />
+        <button type="submit">@L["admin.deleteCover"]</button>
+    </form>
+}
+<form method="post" enctype="multipart/form-data" asp-page-handler="Card" class="inline">
+    <input type="hidden" name="id" value="@Model.Topic.Id" />
+    <input type="file" name="cover" accept="image/jpeg,image/png,image/webp" required />
+    <button type="submit" class="primary">@L["admin.uploadCover"]</button>
+</form>
+
 <h2>@L["admin.noms"]</h2>
 @if (Model.Rows.Count == 0) { <p class="muted">@L["admin.none"]</p> }
 <ol class="rows">
