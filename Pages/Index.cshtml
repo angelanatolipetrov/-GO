@@ -3,9 +3,6 @@
 @{
     var title = L.Pick(Model.Topic.Title, Model.Topic.TitleEn);
     ViewData["Title"] = title;
-    ViewData["Home"] = true;
-    var th = Model.Theme;
-    var art = th?.Art ?? "food";
     var loggedIn = Model.UserId != null;
     var req = ViewContext.HttpContext.Request;
     var back = req.Path.Value + req.QueryString.Value;
@@ -14,82 +11,39 @@
     var endIso = Model.Topic.EndsOn.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
 }
 
+@if (TempData["Msg"] is string msg) { <p class="msg">@msg</p> }
 
 <section class="hero @(Model.CoverUrl == null ? "nocover" : "")" style="@(Model.CoverUrl != null ? $"--cover:url('{Model.CoverUrl}')" : "")">
     <div class="hero-in">
-        <span class="badge"><svg viewBox="0 0 24 24" class="star" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.5 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>@L["hero.badge"]</span>
-        <h1><span class="lead-in">@L["hero.welcome"]</span> <span class="topic">@(title)!</span></h1>
-        <p class="sub">@(th != null ? L.Pick(th.TaglineBg, th.TaglineEn) : L["hero.sub"])</p>
+        <span class="badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.5 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>@L["hero.badge"]</span>
+        <h1><span class="lead-in">@L["hero.lead"]</span> <span class="topic">@title</span></h1>
+        <p class="sub">@L["hero.sub"]</p>
         <div class="cta">
-            <a class="btn primary big" href="#rows">@L["hero.ranking"] <span aria-hidden="true">→</span></a>
-            <button type="button" class="btn glass" data-share data-title="@title" data-copied="@L["share.copied"]">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg>@L["share.btn"]</button>
+            <a class="btn primary big" href="#rows">@L["hero.vote"] <span aria-hidden="true">→</span></a>
+            <button type="button" class="btn glass" data-share data-title="@title" data-copied="@L["share.copied"]">@L["share.btn"]</button>
         </div>
     </div>
 </section>
 
 <div class="stats">
     <div class="stat">
-        <svg viewBox="0 0 32 32" class="ico" aria-hidden="true"><rect x="3" y="6" width="26" height="23" rx="4" fill="#e3212b"/><rect x="3" y="6" width="26" height="7" rx="3" fill="#a5121a"/><rect x="8" y="3" width="3" height="7" rx="1.5" fill="#e3212b"/><rect x="21" y="3" width="3" height="7" rx="1.5" fill="#e3212b"/><g fill="#fff"><rect x="8" y="16" width="4" height="3" rx="1"/><rect x="14" y="16" width="4" height="3" rx="1"/><rect x="20" y="16" width="4" height="3" rx="1"/><rect x="8" y="22" width="4" height="3" rx="1"/><rect x="14" y="22" width="4" height="3" rx="1"/></g></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
         <div><small>@L["home.endsIn"]</small><b data-countdown="@endIso" data-d="@L["unit.d"]" data-h="@L["unit.h"]" data-m="@L["unit.m"]"></b></div>
     </div>
     <div class="stat">
-        <svg viewBox="0 0 32 32" class="ico" aria-hidden="true"><rect x="3" y="13" width="6" height="16" rx="1.5" fill="#a5121a"/><path d="M11 14 16.5 3.5c2.4 0 4 1.7 3.7 4.3L19.5 12H27a2.8 2.8 0 0 1 2.7 3.4l-2.3 11A3 3 0 0 1 24.5 29H11z" fill="#e3212b"/></svg>
-        <div><b><span class="hot">@Model.Total</span> @L[Model.Total == 1 ? "stat.vote1" : "stat.votes"]</b></div>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11v10H4V11zM7 11l4-8a2.5 2.5 0 0 1 2.5 2.5V9h5.2a2 2 0 0 1 2 2.3l-1.3 8A2 2 0 0 1 17.4 21H7"/></svg>
+        <div><b>@Model.Total</b> <span>@L["stat.votes"]</span></div>
     </div>
     <div class="stat">
-        <svg viewBox="0 0 32 32" class="ico" aria-hidden="true"><path d="M9 4h14v8a7 7 0 0 1-14 0z" fill="#f5b301"/><path d="M9 6H4v2a5 5 0 0 0 5 5M23 6h5v2a5 5 0 0 1-5 5" fill="none" stroke="#f5b301" stroke-width="2.4"/><path d="M14 18h4v5h-4z" fill="#d99a00"/><rect x="9" y="23" width="14" height="5" rx="1.5" fill="#f5b301"/></svg>
-        <div><b><span class="hot">@Model.Rows.Count</span> @L[Model.Rows.Count == 1 ? "stat.place1" : "stat.places"]</b></div>
-    </div>
-    <div class="stat">
-        <svg viewBox="0 0 32 32" class="ico" aria-hidden="true"><circle cx="21.5" cy="10" r="4.5" fill="#a5121a"/><path d="M14 27a7.5 7.5 0 0 1 15 0z" fill="#a5121a"/><circle cx="12" cy="11" r="5.5" fill="#e3212b"/><path d="M2.5 28a9.5 9.5 0 0 1 19 0z" fill="#e3212b"/></svg>
-        <div><small>@L["stat.community"]</small><b>@Model.Members @L[Model.Members == 1 ? "stat.member1" : "stat.members"]</b></div>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg>
+        <div><b>@Model.Rows.Count</b> <span>@L["stat.places"]</span></div>
     </div>
     <a class="stat link" href="#nominate">
-        <svg viewBox="0 0 32 32" class="ico" aria-hidden="true"><path d="M16 30s-10-8.6-10-16a10 10 0 0 1 20 0c0 7.4-10 16-10 16z" fill="#e3212b"/><circle cx="16" cy="14" r="4" fill="#121418"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M17 8v6M14 11h6"/></svg>
         <div><small>@L["stat.nominate"]</small><b>@L["stat.nominateLink"]</b></div>
     </a>
 </div>
 
-<section class="catcard">
-    <div class="cat-photo">
-        @if (Model.CardUrl != null) { <img src="@Model.CardUrl" alt="" /> }
-    </div>
-    <div class="cat-body">
-        <span class="badge"><svg viewBox="0 0 24 24" class="star" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.5 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>@L["cat.badge"]</span>
-        <h2>
-            @if (art == "books")
-            {
-                <svg viewBox="0 0 24 24" class="cat-ico" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 3 5v14c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5z"/><path d="M12 6.5v14" stroke="#121418" stroke-width="1.5"/></svg>
-            }
-            else if (art == "outdoor")
-            {
-                <svg viewBox="0 0 24 24" class="cat-ico" aria-hidden="true"><path d="M20 3C9 3 4 8 4 15c0 2 .5 3.5 1 5 1-6 5-9.5 10-11-4 2.5-7 6-8 11.5C14 21 20 15 20 3z"/></svg>
-            }
-            else
-            {
-                <svg viewBox="0 0 24 24" class="cat-ico" aria-hidden="true"><path d="M6 2h1.6v6.5a1 1 0 0 0 .8 1V2H10v7.5a1 1 0 0 0 .8-1V2h1.6v7a3 3 0 0 1-2.4 2.9V22H8.2V11.9A3 3 0 0 1 6 9zM17 2c2 0 3 2.5 3 6.5 0 2.3-1 3.5-2.2 3.8V22h-1.9V2z"/></svg>
-            }
-            @(th != null ? L.Pick(th.CategoryBg, th.CategoryEn) : title)
-        </h2>
-        <p>@(th != null ? L.Pick(th.AboutBg, th.AboutEn) : L["hero.sub"])</p>
-        <a class="btn primary" href="#rows">@L["hero.vote"] <span aria-hidden="true">→</span></a>
-    </div>
-    @if (art == "books")
-    {
-        <svg class="cat-art" viewBox="0 0 200 160" aria-hidden="true"><path d="M100 40c-20-14-48-18-80-14v100c32-4 60 0 80 14 20-14 48-18 80-14V26c-32-4-60 0-80 14zM100 40v100M40 50c18-1 34 2 48 9M40 70c18-1 34 2 48 9M112 59c14-7 30-10 48-9M112 79c14-7 30-10 48-9"/></svg>
-    }
-    else if (art == "outdoor")
-    {
-        <svg class="cat-art" viewBox="0 0 200 160" aria-hidden="true"><circle cx="100" cy="62" r="44"/><path d="M100 106v48M100 128l-18-16M100 120l20-18M40 154h120M150 30c8-6 18-6 26 0M158 44c6-4 12-4 18 0"/></svg>
-    }
-    else
-    {
-        <svg class="cat-art" viewBox="0 0 200 160" aria-hidden="true"><path d="M62 92a24 24 0 0 1 6-46 32 32 0 0 1 62-6 24 24 0 0 1 12 46v26H62zM62 100h80"/><path d="M118 126l44 30M126 118l40 26M150 108c10-6 20 2 18 14l-6 30"/></svg>
-    }
-</section>
-
-@if (TempData["Msg"] is string msg) { <p class="msg">@msg</p> }
 <p class="muted closes">@L.Format("home.closes", Model.Topic.EndsOn.AddDays(-1).ToString("d MMMM yyyy", L.Culture))</p>
 
 @if (Model.LastWinner is { Top.Count: > 0 } lw)
@@ -173,7 +127,7 @@ else
     </ol>
 }
 
-<h2 id="nominate" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V12M10 20V6M16 20v-9M22 20H2"/></svg>@L["nom.h"]</h2>
+<h2 id="nominate">@L["nom.h"]</h2>
 @if (!loggedIn)
 {
     <p class="card"><a asp-page="/Account/Login" asp-route-returnUrl="@back">@L["nom.login"]</a></p>

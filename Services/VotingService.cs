@@ -7,6 +7,18 @@ namespace BestInTown.Services;
 // Methods return null on success or a localization key (see Loc) describing the problem.
 public class VotingService(AppDb db)
 {
+    private static readonly (string Bg, string En)[] Themes =
+    {
+        ("Най-добрата пицария", "Best pizzeria"),
+        ("Най-тихото място за работа на открито", "Quietest spot to work outdoors"),
+        ("Най-добрата занаятчийска пекарна", "Best artisan bakery"),
+        ("Най-доброто кафе", "Best coffee"),
+        ("Най-добрият бургер", "Best burger"),
+        ("Най-добрата сладкарница", "Best pastry shop"),
+        ("Най-доброто място за закуска", "Best breakfast spot"),
+        ("Най-добрата книжарница", "Best bookstore"),
+    };
+
     // Soft signal only: accounts are the main limit, and many people share one IP (homes, offices).
     private const int MaxVotesPerIpPerTopic = 10;
     private const int MaxNominationsPerUserPerTopic = 3;
@@ -21,7 +33,7 @@ public class VotingService(AppDb db)
         var today = now.Date;
         var start = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
         var week = System.Globalization.ISOWeek.GetWeekOfYear(today);
-        var theme = Themes.All[week % Themes.All.Length];
+        var theme = Themes[week % Themes.Length];
         topic = new Topic { Title = theme.Bg, TitleEn = theme.En, StartsOn = start, EndsOn = start.AddDays(7) };
         db.Topics.Add(topic);
         try { await db.SaveChangesAsync(); }
@@ -53,8 +65,6 @@ public class VotingService(AppDb db)
                 Votes = n.Votes.Count
             })
             .ToListAsync();
-
-    public Task<int> MembersAsync() => db.Users.CountAsync(u => u.EmailConfirmed);
 
     public Task<List<string>> NeighborhoodsAsync(int topicId) =>
         db.Nominations.Where(n => n.TopicId == topicId && n.Place.Neighborhood != null)

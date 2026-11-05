@@ -29,19 +29,6 @@ public class IndexModel(VotingService svc, PhotoStore photos) : PageModel
         return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostCardAsync(int id, IFormFile? cover)
-    {
-        var error = await photos.SaveCardAsync(id, cover);
-        if (error != null) TempData["Msg"] = error;
-        return RedirectToPage();
-    }
-
-    public IActionResult OnPostDeleteCard(int id)
-    {
-        photos.DeleteCard(id);
-        return RedirectToPage();
-    }
-
     public IActionResult OnPostDeleteCover(int id)
     {
         photos.DeleteTopic(id);

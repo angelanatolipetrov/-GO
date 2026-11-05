@@ -7,7 +7,7 @@ public class PhotoStore(IWebHostEnvironment env, ILogger<PhotoStore> log)
     public const long MaxBytes = 5 * 1024 * 1024;
     private static readonly string[] Exts = { ".jpg", ".png", ".webp" };
 
-    private const string Places = "places", Topics = "topics", Cards = "cards";
+    private const string Places = "places", Topics = "topics";
     private string Dir(string kind) => Path.Combine(env.WebRootPath, "uploads", kind);
 
     public string? Url(int placeId) => UrlOf(Places, placeId);
@@ -18,11 +18,6 @@ public class PhotoStore(IWebHostEnvironment env, ILogger<PhotoStore> log)
     public string? TopicUrl(int topicId) => UrlOf(Topics, topicId);
     public Task<string?> SaveTopicAsync(int topicId, IFormFile? file) => SaveOf(Topics, topicId, file, replace: true);
     public void DeleteTopic(int topicId) => DeleteOf(Topics, topicId);
-
-    // Second photo for the topic: the picture in the "weekly category" card.
-    public string? CardUrl(int topicId) => UrlOf(Cards, topicId);
-    public Task<string?> SaveCardAsync(int topicId, IFormFile? file) => SaveOf(Cards, topicId, file, replace: true);
-    public void DeleteCard(int topicId) => DeleteOf(Cards, topicId);
 
     private string? UrlOf(string kind, int id)
     {
