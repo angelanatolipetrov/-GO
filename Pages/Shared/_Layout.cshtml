@@ -1,9 +1,11 @@
 @{
     var req = ViewContext.HttpContext.Request;
     var back = Uri.EscapeDataString(req.Path.Value + req.QueryString.Value);
+    var accent = BestInTown.Services.SiteTheme.Accent(req);
+    var mode = BestInTown.Services.SiteTheme.Mode(req);
 }
 <!DOCTYPE html>
-<html lang="@L.Lang">
+<html lang="@L.Lang" data-accent="@accent" data-mode="@mode">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -29,6 +31,25 @@
             <a asp-page="/Guide" class="@On("/Guide")">@L["nav.guide"]</a>
         </nav>
         <div class="tools">
+            <details class="theme">
+                <summary title="@L["theme.btn"]" aria-label="@L["theme.btn"]">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5c0-4-4-7.2-9-7.2z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7.2" r="1.2"/><circle cx="15" cy="7.5" r="1.2"/></svg>
+                </summary>
+                <div class="theme-menu">
+                    <p>@L["theme.color"]</p>
+                    <div class="swatches">
+                        @foreach (var (name, swatch) in BestInTown.Services.SiteTheme.Accents)
+                        {
+                            <a href="/theme?accent=@name&returnUrl=@back" class="@(accent == name ? "on" : "")" style="--sw:@swatch" title="@L["theme." + name]" aria-label="@L["theme." + name]"></a>
+                        }
+                    </div>
+                    <p>@L["theme.mode"]</p>
+                    <div class="modes">
+                        <a href="/theme?mode=dark&returnUrl=@back" class="@(mode == "dark" ? "on" : "")">@L["theme.dark"]</a>
+                        <a href="/theme?mode=light&returnUrl=@back" class="@(mode == "light" ? "on" : "")">@L["theme.light"]</a>
+                    </div>
+                </div>
+            </details>
             <span class="lang">
                 <a href="/lang/bg?returnUrl=@back" class="@(L.Lang == "bg" ? "on" : "")">BG</a><a href="/lang/en?returnUrl=@back" class="@(L.Lang == "en" ? "on" : "")">EN</a>
             </span>

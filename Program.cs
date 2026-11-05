@@ -129,5 +129,23 @@ app.MapGet("/lang/{code}", (string code, string? returnUrl, HttpContext ctx) =>
     return Results.LocalRedirect(local ? returnUrl! : "/");
 });
 
+// Site colors: /theme?accent=blue or /theme?mode=light, then back to the page the user was on.
+app.MapGet("/theme", (string? accent, string? mode, string? returnUrl, HttpContext ctx) =>
+{
+    var opts = new CookieOptions
+    {
+        IsEssential = true,
+        Secure = ctx.Request.IsHttps,
+        SameSite = SameSiteMode.Lax,
+        Expires = DateTimeOffset.UtcNow.AddYears(1)
+    };
+    if (SiteTheme.IsAccent(accent)) ctx.Response.Cookies.Append(SiteTheme.AccentCookie, accent!, opts);
+    if (SiteTheme.IsMode(mode)) ctx.Response.Cookies.Append(SiteTheme.ModeCookie, mode!, opts);
+
+    var local = !string.IsNullOrEmpty(returnUrl) && returnUrl[0] == '/'
+                && (returnUrl.Length == 1 || (returnUrl[1] != '/' && returnUrl[1] != '\\'));
+    return Results.LocalRedirect(local ? returnUrl! : "/");
+});
+
 app.MapRazorPages();
 app.Run();
