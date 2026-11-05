@@ -55,6 +55,11 @@ public class EmailChecker(ILookupClient dns, ILogger<EmailChecker> log)
             if (typo != null) return new("err.email.typo", parsed.User + "@" + typo);
         }
 
+        // Hard limit for the whole lookup, so a slow DNS server never hangs the sign-up page.
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(5));
+        ct = timeout.Token;
+
         try
         {
             var mx = await dns.QueryAsync(domain, QueryType.MX, cancellationToken: ct);
@@ -72,9 +77,10 @@ public class EmailChecker(ILookupClient dns, ILogger<EmailChecker> log)
             var aaaa = await dns.QueryAsync(domain, QueryType.AAAA, cancellationToken: ct);
             return aaaa.Answers.AaaaRecords().Any() || a.HasError || aaaa.HasError ? EmailCheck.Valid : new("err.email.domain");
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex)
         {
-            // DNS is down or slow: don't block real people because of our network problem.
+            // DNS is down, slow or unreachable (DnsClient reports timeouts as cancellations):
+            // don't block real people because of our network problem.
             log.LogWarning(ex, "MX lookup failed for {Domain}", domain);
             return EmailCheck.Valid;
         }
