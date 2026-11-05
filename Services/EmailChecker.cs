@@ -5,7 +5,7 @@ namespace BestInTown.Services;
 
 public record EmailCheck(string? ErrorKey, string? Suggestion = null)
 {
-    public static readonly EmailCheck Valid = EmailCheck.Valid;
+    public static readonly EmailCheck Valid = new(ErrorKey: null);
     public bool Ok => ErrorKey == null;
 }
 
