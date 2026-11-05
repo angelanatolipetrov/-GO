@@ -5,7 +5,8 @@ using BestInTown.Services;
 
 namespace BestInTown.Pages.Account;
 
-public class RegisterModel(UserManager<IdentityUser> users, SignInManager<IdentityUser> signIn, EmailChecker emails, Loc L) : PageModel
+public class RegisterModel(UserManager<IdentityUser> users, EmailChecker emails, EmailCodes codes,
+                           ILogger<RegisterModel> log, Loc L) : PageModel
 {
     [BindProperty] public string? Email { get; set; }
     [BindProperty] public string? Password { get; set; }
@@ -47,7 +48,17 @@ public class RegisterModel(UserManager<IdentityUser> users, SignInManager<Identi
             return Page();
         }
 
-        await signIn.SignInAsync(user, isPersistent: true);
-        return LocalRedirect(Url.IsLocalUrl(ReturnUrl) ? ReturnUrl! : "/");
+        // Not signed in yet: the account works only after the emailed code is entered.
+        try
+        {
+            await codes.SendAsync(user);
+            TempData["Msg"] = L["verify.sent"];
+        }
+        catch (Exception ex)
+        {
+            log.LogError(ex, "Could not send verification code to {Email}", email);
+            TempData["Msg"] = L["verify.sendFailed"];
+        }
+        return RedirectToPage("/Account/Verify", new { email, returnUrl = ReturnUrl });
     }
 }

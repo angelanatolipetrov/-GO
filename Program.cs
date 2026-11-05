@@ -21,12 +21,15 @@ builder.Services.AddSingleton<DnsClient.ILookupClient>(new DnsClient.LookupClien
     ThrowDnsErrors = false,
 }));
 builder.Services.AddSingleton<EmailChecker>();
+builder.Services.AddSingleton<EmailSender>();
+builder.Services.AddScoped<EmailCodes>();
 builder.Services.AddDbContext<AppDb>(o =>
     o.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=bestintown.db"));
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(o =>
 {
     o.User.RequireUniqueEmail = true;
+    o.SignIn.RequireConfirmedEmail = true;   // log in only after entering the emailed code
     o.Password.RequiredLength = 8;
     o.Password.RequireDigit = true;
     o.Password.RequireLowercase = false;
