@@ -82,7 +82,6 @@ else
         var pct = maxVotes == 0 ? 0 : r.Votes * 100 / maxVotes;
         var isLead = rank == 1 && r.Votes > 0;
         var photo = Photos.Url(r.PlaceId);
-        var canAddPhoto = photo == null && loggedIn && r.NominatorKey == Model.UserId;
         <li class="row @(isLead ? "lead" : "") @(Model.MyVote == r.NominationId ? "mine" : "")">
             @if (photo != null)
             {
@@ -96,13 +95,6 @@ else
             <div class="body">
                 <div class="name" style="--share:@pct%"><strong>@r.Name</strong></div>
                 @if (!string.IsNullOrEmpty(r.Neighborhood)) { <div class="hood">@r.Neighborhood</div> }
-                @if (canAddPhoto)
-                {
-                    <form method="post" enctype="multipart/form-data" asp-page-handler="Photo" asp-route-hood="@Model.Hood" class="addphoto">
-                        <input type="hidden" name="nominationId" value="@r.NominationId" />
-                        <label>@L["photo.add"]<input type="file" name="Photo" accept="image/jpeg,image/png,image/webp" data-autosubmit /></label>
-                    </form>
-                }
             </div>
             <form method="post" class="vote" asp-page-handler="Vote" asp-route-hood="@Model.Hood">
                 <input type="hidden" name="nominationId" value="@r.NominationId" />

@@ -93,19 +93,6 @@ public class IndexModel(VotingService svc, PhotoStore photos, IConfiguration cfg
         return RedirectToPage(new { hood = Hood });
     }
 
-    // Add a photo later to a place you nominated this week (only if it has none yet).
-    public async Task<IActionResult> OnPostPhotoAsync(int nominationId)
-    {
-        if (UserId is null) return LoginRedirect();
-        var topic = await svc.GetCurrentTopicAsync();
-        var placeId = await svc.OwnPlaceInTopicAsync(nominationId, topic.Id, UserId);
-        var error = placeId == null ? "err.nom.notfound"
-                  : Photo == null ? "err.photo.type"
-                  : await photos.SaveAsync(placeId.Value, Photo);
-        TempData["Msg"] = L[error ?? "msg.photo"];
-        return RedirectToPage(new { hood = Hood });
-    }
-
     private IActionResult LoginRedirect()
     {
         TempData["Msg"] = L["msg.loginRequired"];

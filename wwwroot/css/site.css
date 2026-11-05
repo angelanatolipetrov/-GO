@@ -106,11 +106,6 @@ li.row.mine{border-color:var(--red);background:linear-gradient(90deg,var(--red-s
 /* vote bar: length shows votes compared to the leader */
 .body .name::after{content:"";display:block;height:5px;margin-top:.5rem;border-radius:3px;max-width:22rem;
   background:linear-gradient(90deg,var(--red) var(--share,0%),rgba(255,255,255,.08) var(--share,0%))}
-.addphoto{margin:.4rem 0 0}
-.addphoto label{font-size:.9rem;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.addphoto label:hover{color:var(--text)}
-.addphoto input{position:absolute;width:1px;height:1px;opacity:0}
-.addphoto label:focus-within{outline:2px solid var(--red);outline-offset:2px}
 form.vote,form.inline{display:flex;gap:.8rem;align-items:center;margin:0}
 .count{font-weight:800;font-size:1.15rem;white-space:nowrap}
 .count .unit{font-weight:400;font-size:.85rem;color:var(--muted)}

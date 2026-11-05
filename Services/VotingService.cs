@@ -82,11 +82,6 @@ public class VotingService(AppDb db)
         return await db.Places.Where(p => p.NormalizedName == normalized).Select(p => (int?)p.Id).FirstOrDefaultAsync();
     }
 
-    // Place of a nomination in the current week, but only if this user nominated it.
-    public async Task<int?> OwnPlaceInTopicAsync(int nominationId, int topicId, string userId) =>
-        await db.Nominations.Where(n => n.Id == nominationId && n.TopicId == topicId && n.NominatorKey == userId)
-                            .Select(n => (int?)n.PlaceId).FirstOrDefaultAsync();
-
     public async Task<string?> NominateAsync(int topicId, string? name, string? neighborhood, string userId)
     {
         name = name?.Trim() ?? "";
