@@ -6,7 +6,6 @@
     var loggedIn = Model.UserId != null;
     var req = ViewContext.HttpContext.Request;
     var back = req.Path.Value + req.QueryString.Value;
-    var medals = new[] { "🥇", "🥈", "🥉" };
     var rank = 0;
     var endIso = Model.Topic.EndsOn.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
 }
@@ -17,17 +16,17 @@
     <p class="eyebrow">@L["nav.week"]</p>
     <h1>@title</h1>
     <div class="hero-meta">
-        <span class="chip">⏳ @L["home.endsIn"] <b data-countdown="@endIso" data-d="@L["unit.d"]" data-h="@L["unit.h"]" data-m="@L["unit.m"]"></b></span>
-        <span class="chip">🗳 <b>@Model.Total</b> @L["votes"]</span>
-        <span class="chip">📍 <b>@Model.Rows.Count</b> @L["home.places"]</span>
+        <span class="chip">@L["home.endsIn"] <b data-countdown="@endIso" data-d="@L["unit.d"]" data-h="@L["unit.h"]" data-m="@L["unit.m"]"></b></span>
+        <span class="chip"><b>@Model.Total</b> @L["votes"]</span>
+        <span class="chip"><b>@Model.Rows.Count</b> @L["home.places"]</span>
     </div>
     <p class="muted">@L.Format("home.closes", Model.Topic.EndsOn.AddDays(-1).ToString("d MMMM yyyy", L.Culture))</p>
-    <button type="button" class="btn ghost" data-share data-title="@title" data-copied="@L["share.copied"]">🔗 @L["share.btn"]</button>
+    <button type="button" class="btn ghost" data-share data-title="@title" data-copied="@L["share.copied"]">@L["share.btn"]</button>
 </section>
 
 @if (Model.LastWinner is { Top.Count: > 0 } lw)
 {
-    <p class="winner">👑 @L["home.lastWinner"] – <i>@L.Pick(lw.Title, lw.TitleEn)</i>: <b>@lw.Top[0].Name</b></p>
+    <p class="winner">@L["home.lastWinner"] – <i>@L.Pick(lw.Title, lw.TitleEn)</i>: <b>@lw.Top[0].Name</b></p>
 }
 
 @if (Model.Neighborhoods.Count > 0)
@@ -55,7 +54,7 @@ else
         var pct = Model.Total == 0 ? 0 : r.Votes * 100 / Model.Total;
         var isTop = r.Votes > 0 && rank <= 3;
         <li class="row @(Model.MyVote == r.NominationId ? "mine" : "") @(isTop ? "top" : "")">
-            <div class="rank">@(isTop ? medals[rank - 1] : rank.ToString())</div>
+            <div class="rank">@rank</div>
             <div>
                 <div class="name"><strong>@r.Name</strong>@if (!string.IsNullOrEmpty(r.Neighborhood)) { <span class="chip small">@r.Neighborhood</span> }</div>
                 <div class="bar"><span style="width:@pct%"></span></div>

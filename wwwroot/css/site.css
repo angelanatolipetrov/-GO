@@ -1,5 +1,5 @@
-:root{--bg:#faf7f2;--surface:#fff;--text:#1f2937;--muted:#6b7280;--line:#ece7df;--accent:#d97706;--accent-d:#b45309;--accent-soft:#fef3c7;--ok:#ecfdf5;--ok-b:#a7f3d0;--err:#fef2f2;--err-b:#fecaca;--r:14px;--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.05)}
-@media(prefers-color-scheme:dark){:root{--bg:#14110d;--surface:#1e1a15;--text:#f3efe8;--muted:#a39a8c;--line:#2e2820;--accent:#f59e0b;--accent-d:#fbbf24;--accent-soft:#3a2a0a;--ok:#0f2a1e;--ok-b:#14532d;--err:#2a1212;--err-b:#7f1d1d;--shadow:none}}
+:root{--bg:#f3f8f8;--surface:#fff;--text:#16282b;--muted:#5d7275;--line:#dde9e9;--accent:#0f766e;--accent-d:#115e59;--accent-soft:#d9f3ef;--ok:#ecfdf5;--ok-b:#a7f3d0;--err:#fef2f2;--err-b:#fecaca;--r:14px;--shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.05)}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1415;--surface:#152123;--text:#e8f1f0;--muted:#94a9a8;--line:#243433;--accent:#0d9488;--accent-d:#5eead4;--accent-soft:#0f2f2c;--ok:#0f2a1e;--ok-b:#14532d;--err:#2a1212;--err-b:#7f1d1d;--shadow:none}}
 *{box-sizing:border-box}[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 a{color:var(--accent-d)}h1{font-size:1.8rem;line-height:1.2;margin:.2rem 0 .6rem}h2{font-size:1.2rem;margin:1.6rem 0 .6rem}
@@ -44,7 +44,7 @@ ol.rows{list-style:none;padding:0;margin:0}
 ol.rows>li{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:.8rem 1rem;margin-bottom:.6rem;box-shadow:var(--shadow)}
 li.row{display:grid;grid-template-columns:2.4rem 1fr auto;gap:.8rem;align-items:center}
 li.row.mine{border-color:var(--accent);background:var(--accent-soft)}
-li.row.top .rank{font-size:1.6rem}
+li.row.top .rank{font-size:1.4rem;color:var(--accent-d)}
 .rank{font-weight:800;text-align:center;color:var(--muted)}
 .name{display:flex;flex-wrap:wrap;gap:.2rem .5rem;align-items:center}
 .bar{height:6px;background:var(--line);border-radius:3px;margin-top:.5rem;overflow:hidden}

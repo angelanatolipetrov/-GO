@@ -38,7 +38,7 @@ public class Loc(IHttpContextAccessor accessor)
         ["nom.btn"] = ("Номинирай", "Nominate"),
         ["nom.login"] = ("Влезте, за да номинирате място.", "Log in to nominate a place."),
         ["nom.choose"] = ("— Избери място в Бургас —", "— Choose a place in Burgas —"),
-        ["nom.other"] = ("✍ Друго място (напиши името)", "✍ Another place (type the name)"),
+        ["nom.other"] = ("Друго място (напиши името)", "Another place (type the name)"),
         ["cat.pizza"] = ("Пицарии", "Pizza"),
         ["cat.coffee"] = ("Кафе", "Coffee"),
         ["cat.bakery"] = ("Пекарни", "Bakeries"),
@@ -58,7 +58,7 @@ public class Loc(IHttpContextAccessor accessor)
         ["unit.d"] = ("д", "d"),
         ["unit.h"] = ("ч", "h"),
         ["unit.m"] = ("мин", "min"),
-        ["footer"] = ("Правено с ♥ от местни за местни", "Made with ♥ by locals, for locals"),
+        ["footer"] = ("Правено с любов от местни за местни", "Made with love by locals, for locals"),
         ["guide.winner"] = ("Победител", "Winner"),
         // messages
         ["msg.voted"] = ("Гласът ви е приет!", "Your vote has been counted!"),

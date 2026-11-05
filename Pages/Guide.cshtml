@@ -2,7 +2,6 @@
 @model GuideModel
 @{
     ViewData["Title"] = L["guide.h"];
-    var medals = new[] { "🥇", "🥈", "🥉" };
 }
 
 <h1>@L["guide.h"]</h1>
@@ -21,7 +20,7 @@
             @foreach (var r in e.Top)
             {
                 <li>
-                    <span class="rank">@medals[i++]</span>
+                    <span class="rank">@(++i)</span>
                     <strong>@r.Name</strong>
                     @if (!string.IsNullOrEmpty(r.Neighborhood)) { <span class="chip small">@r.Neighborhood</span> }
                     <span class="count">@r.Votes @L["votes"]</span>
