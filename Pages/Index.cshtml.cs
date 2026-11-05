@@ -51,6 +51,15 @@ public class IndexModel(VotingService svc, IConfiguration cfg, Loc L) : PageMode
         return RedirectToPage(new { hood = Hood });
     }
 
+    public async Task<IActionResult> OnPostUnvoteAsync()
+    {
+        if (UserId is null) return LoginRedirect();
+        var topic = await svc.GetCurrentTopicAsync();
+        var error = await svc.UnvoteAsync(topic.Id, UserId);
+        TempData["Msg"] = L[error ?? "msg.unvoted"];
+        return RedirectToPage(new { hood = Hood });
+    }
+
     public async Task<IActionResult> OnPostNominateAsync()
     {
         if (UserId is null) return LoginRedirect();

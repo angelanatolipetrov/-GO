@@ -138,6 +138,35 @@ public class VotingService(AppDb db)
         return null;
     }
 
+    // Lets a user take back their vote for this week's topic so they can vote again.
+    public async Task<string?> UnvoteAsync(int topicId, string userId)
+    {
+        var topic = await db.Topics.FindAsync(topicId);
+        if (topic == null) return "err.generic";
+
+        var now = DateTime.UtcNow;
+        if (topic.StartsOn > now || topic.EndsOn <= now) return "err.vote.closed";
+
+        var vote = await db.Votes.FirstOrDefaultAsync(v => v.TopicId == topicId && v.VoterKey == userId);
+        if (vote == null) return "err.vote.none";
+
+        db.Votes.Remove(vote);
+        try { await db.SaveChangesAsync(); }
+        catch (DbUpdateConcurrencyException) { return "err.vote.none"; }   // already removed in another request
+
+        // If the user also nominated this place and nobody else voted for it, take it off the list too.
+        var nom = await db.Nominations.FirstOrDefaultAsync(n => n.Id == vote.NominationId);
+        if (nom != null && nom.NominatorKey == userId
+            && !await db.Votes.AnyAsync(v => v.NominationId == nom.Id))
+        {
+            db.Nominations.Remove(nom);
+            try { await db.SaveChangesAsync(); }
+            catch (DbUpdateException) { return null; }   // someone voted meanwhile – keep the place
+            return "msg.unvoted.removed";
+        }
+        return null;
+    }
+
     // ---- moderation (used by /Admin) ----
     public async Task DeleteNominationAsync(int nominationId)
     {

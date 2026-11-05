@@ -68,7 +68,9 @@ else
                 }
                 else if (Model.MyVote == r.NominationId)
                 {
-                    <button type="button" class="primary" disabled>@L["btn.voted"]</button>
+                    <span class="voted-label">@L["btn.voted"]</span>
+                    <button type="submit" class="ghost" asp-page-handler="Unvote" asp-route-hood="@Model.Hood"
+                            data-confirm="@L["btn.unvote.confirm"]">@L["btn.unvote"]</button>
                 }
                 else
                 {

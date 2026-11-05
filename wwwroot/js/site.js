@@ -26,6 +26,9 @@
       if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(function () { toast(b.dataset.copied); });
     });
   });
+  document.querySelectorAll('[data-confirm]').forEach(function (b) {
+    b.addEventListener('click', function (e) { if (!confirm(b.dataset.confirm)) e.preventDefault(); });
+  });
   document.querySelectorAll('[data-place-select]').forEach(function (sel) {
     var other = document.querySelector(sel.dataset.otherTarget);
     function sync() { other.hidden = sel.value !== '__other'; }
