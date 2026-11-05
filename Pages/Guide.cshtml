@@ -22,6 +22,14 @@
             {
                 <li>
                     <span class="rank">@(++i)</span>
+                    @if (Photos.Url(r.PlaceId) is string photo)
+                    {
+                        <img class="photo" src="@photo" alt="@r.Name" loading="lazy" />
+                    }
+                    else
+                    {
+                        <span class="photo none" aria-hidden="true">@r.Name.Substring(0, 1)</span>
+                    }
                     <strong>@r.Name</strong>
                     @if (!string.IsNullOrEmpty(r.Neighborhood)) { <span class="hood">@r.Neighborhood</span> }
                     <span class="count">@r.Votes @L["votes"]</span>

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BestInTown.Pages.Admin;
 
-public class IndexModel(VotingService svc) : PageModel
+public class IndexModel(VotingService svc, PhotoStore photos) : PageModel
 {
     public Topic Topic { get; set; } = null!;
     public List<LeaderboardRow> Rows { get; set; } = new();
@@ -19,6 +19,12 @@ public class IndexModel(VotingService svc) : PageModel
     public async Task<IActionResult> OnPostDeleteAsync(int id)
     {
         await svc.DeleteNominationAsync(id);
+        return RedirectToPage();
+    }
+
+    public IActionResult OnPostDeletePhoto(int placeId)
+    {
+        photos.Delete(placeId);
         return RedirectToPage();
     }
 

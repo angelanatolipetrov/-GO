@@ -17,7 +17,7 @@
     <h1>@title</h1>
     <p>@L["home.endsIn"] <b data-countdown="@endIso" data-d="@L["unit.d"]" data-h="@L["unit.h"]" data-m="@L["unit.m"]"></b>. <b>@Model.Total</b> @L["votes"], <b>@Model.Rows.Count</b> @L["home.places"].</p>
     <p class="muted">@L.Format("home.closes", Model.Topic.EndsOn.AddDays(-1).ToString("d MMMM yyyy", L.Culture))</p>
-    <div class="actions"><button type="button" class="ghost" data-share data-title="@title" data-copied="@L["share.copied"]">@L["share.btn"]</button></div>
+    <div class="actions"><button type="button" class="linkbtn" data-share data-title="@title" data-copied="@L["share.copied"]">@L["share.btn"]</button></div>
 </section>
 
 @if (Model.LastWinner is { Top.Count: > 0 } lw)
@@ -38,25 +38,49 @@
 
 @if (Model.Rows.Count == 0)
 {
-    <p class="card">@L["home.empty"]</p>
+    <div class="empty">
+        <p class="empty-big">@L["home.empty"]</p>
+        <a class="btn primary" href="#nominate">@L["nom.h"]</a>
+    </div>
 }
 else
 {
-    <input type="search" class="search" data-filter="#rows" placeholder="@L["search.ph"]" />
+    @if (Model.Rows.Count > 5)
+    {
+        <input type="search" class="search" data-filter="#rows" placeholder="@L["search.ph"]" />
+    }
     <ol class="rows" id="rows">
     @foreach (var r in Model.Rows)
     {
         rank++;
         var pct = maxVotes == 0 ? 0 : r.Votes * 100 / maxVotes;
-        var isTop = r.Votes > 0 && rank <= 3;
-        <li class="row @(Model.MyVote == r.NominationId ? "mine" : "") @(isTop ? "top" : "")">
-            <div class="rank">@rank</div>
-            <div>
-                <div class="name" style="--share:@pct%"><strong>@r.Name</strong>@if (!string.IsNullOrEmpty(r.Neighborhood)) { <span class="hood">@r.Neighborhood</span> }</div>
+        var isLead = rank == 1 && r.Votes > 0;
+        var photo = Photos.Url(r.PlaceId);
+        var canAddPhoto = photo == null && loggedIn && r.NominatorKey == Model.UserId;
+        <li class="row @(isLead ? "lead" : "") @(Model.MyVote == r.NominationId ? "mine" : "")">
+            @if (photo != null)
+            {
+                <img class="photo" src="@photo" alt="@r.Name" loading="lazy" />
+            }
+            else
+            {
+                <span class="photo none" aria-hidden="true">@r.Name.Substring(0, 1)</span>
+            }
+            <div class="rank">@(isLead ? "№1" : rank.ToString())</div>
+            <div class="body">
+                <div class="name" style="--share:@pct%"><strong>@r.Name</strong></div>
+                @if (!string.IsNullOrEmpty(r.Neighborhood)) { <div class="hood">@r.Neighborhood</div> }
+                @if (canAddPhoto)
+                {
+                    <form method="post" enctype="multipart/form-data" asp-page-handler="Photo" asp-route-hood="@Model.Hood" class="addphoto">
+                        <input type="hidden" name="nominationId" value="@r.NominationId" />
+                        <label>@L["photo.add"]<input type="file" name="Photo" accept="image/jpeg,image/png,image/webp" data-autosubmit /></label>
+                    </form>
+                }
             </div>
             <form method="post" class="vote" asp-page-handler="Vote" asp-route-hood="@Model.Hood">
                 <input type="hidden" name="nominationId" value="@r.NominationId" />
-                <span class="count">@r.Votes</span>
+                <span class="count">@r.Votes <span class="unit">@L["votes"]</span></span>
                 @if (!loggedIn)
                 {
                     <a class="btn" asp-page="/Account/Login" asp-route-returnUrl="@back">@L["btn.loginToVote"]</a>
@@ -67,9 +91,9 @@ else
                     <button type="submit" class="ghost" asp-page-handler="Unvote" asp-route-hood="@Model.Hood"
                             data-confirm="@L["btn.unvote.confirm"]">@L["btn.unvote"]</button>
                 }
-                else
+                else if (Model.MyVote == null)
                 {
-                    <button type="submit" class="primary" disabled="@(Model.MyVote != null)">@L["btn.vote"]</button>
+                    <button type="submit" class="primary">@L["btn.vote"]</button>
                 }
             </form>
         </li>
@@ -77,14 +101,14 @@ else
     </ol>
 }
 
-<h2>@L["nom.h"]</h2>
+<h2 id="nominate">@L["nom.h"]</h2>
 @if (!loggedIn)
 {
     <p class="card"><a asp-page="/Account/Login" asp-route-returnUrl="@back">@L["nom.login"]</a></p>
 }
 else
 {
-    <form method="post" class="card nominate" asp-page-handler="Nominate" asp-route-hood="@Model.Hood">
+    <form method="post" class="nominate" enctype="multipart/form-data" asp-page-handler="Nominate" asp-route-hood="@Model.Hood">
         <select asp-for="Choice" class="grow" data-place-select data-other-target="#other-fields">
             <option value="">@L["nom.choose"]</option>
             @foreach (var g in BestInTown.Data.PlaceCatalog.All
@@ -114,6 +138,10 @@ else
                 <input type="text" asp-for="Neighborhood" placeholder="@L["nom.hood"]" maxlength="60" />
             }
         </div>
+        <label class="file">
+            <span>@L["photo.optional"]</span>
+            <input type="file" asp-for="Photo" accept="image/jpeg,image/png,image/webp" />
+        </label>
         <button type="submit" class="primary">@L["nom.btn"]</button>
     </form>
 }

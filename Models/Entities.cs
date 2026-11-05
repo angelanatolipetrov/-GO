@@ -43,6 +43,8 @@ public class Vote
 public class LeaderboardRow
 {
     public int NominationId { get; set; }
+    public int PlaceId { get; set; }
+    public string NominatorKey { get; set; } = "";
     public string Name { get; set; } = "";
     public string? Neighborhood { get; set; }
     public int Votes { get; set; }

@@ -20,10 +20,20 @@
     <li>
         <div class="row-top">
             <div><strong>@r.Name</strong> <span class="muted">@r.Neighborhood · @r.Votes @L["votes"]</span></div>
-            <form method="post" class="inline" asp-page-handler="Delete">
-                <input type="hidden" name="id" value="@r.NominationId" />
-                <button type="submit">@L["admin.delete"]</button>
-            </form>
+            <div class="inline">
+                @if (Photos.Url(r.PlaceId) is string url)
+                {
+                    <a href="@url" target="_blank"><img src="@url" alt="" class="thumb" /></a>
+                    <form method="post" class="inline" asp-page-handler="DeletePhoto">
+                        <input type="hidden" name="placeId" value="@r.PlaceId" />
+                        <button type="submit">@L["admin.deletePhoto"]</button>
+                    </form>
+                }
+                <form method="post" class="inline" asp-page-handler="Delete">
+                    <input type="hidden" name="id" value="@r.NominationId" />
+                    <button type="submit">@L["admin.delete"]</button>
+                </form>
+            </div>
         </div>
     </li>
 }

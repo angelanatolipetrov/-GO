@@ -22,6 +22,7 @@ builder.Services.AddSingleton<DnsClient.ILookupClient>(new DnsClient.LookupClien
 }));
 builder.Services.AddSingleton<EmailChecker>();
 builder.Services.AddSingleton<EmailSender>();
+builder.Services.AddSingleton<PhotoStore>();
 builder.Services.AddScoped<EmailCodes>();
 builder.Services.AddDbContext<AppDb>(o =>
     o.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=bestintown.db"));

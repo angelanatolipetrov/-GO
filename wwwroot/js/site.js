@@ -29,6 +29,9 @@
   document.querySelectorAll('[data-confirm]').forEach(function (b) {
     b.addEventListener('click', function (e) { if (!confirm(b.dataset.confirm)) e.preventDefault(); });
   });
+  document.querySelectorAll('[data-autosubmit]').forEach(function (input) {
+    input.addEventListener('change', function () { if (input.files.length) input.form.submit(); });
+  });
   document.querySelectorAll('[data-place-select]').forEach(function (sel) {
     var other = document.querySelector(sel.dataset.otherTarget);
     function sync() { other.hidden = sel.value !== '__other'; }

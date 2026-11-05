@@ -58,6 +58,8 @@ public class VotingService(AppDb db)
             .Select(n => new LeaderboardRow
             {
                 NominationId = n.Id,
+                PlaceId = n.PlaceId,
+                NominatorKey = n.NominatorKey,
                 Name = n.Place.Name,
                 Neighborhood = n.Place.Neighborhood,
                 Votes = n.Votes.Count
@@ -73,6 +75,17 @@ public class VotingService(AppDb db)
             ? Task.FromResult<int?>(null)
             : db.Votes.Where(v => v.TopicId == topicId && v.VoterKey == userId)
                       .Select(v => (int?)v.NominationId).FirstOrDefaultAsync();
+
+    public async Task<int?> FindPlaceIdAsync(string? name)
+    {
+        var normalized = name?.Trim().ToUpperInvariant() ?? "";
+        return await db.Places.Where(p => p.NormalizedName == normalized).Select(p => (int?)p.Id).FirstOrDefaultAsync();
+    }
+
+    // Place of a nomination in the current week, but only if this user nominated it.
+    public async Task<int?> OwnPlaceInTopicAsync(int nominationId, int topicId, string userId) =>
+        await db.Nominations.Where(n => n.Id == nominationId && n.TopicId == topicId && n.NominatorKey == userId)
+                            .Select(n => (int?)n.PlaceId).FirstOrDefaultAsync();
 
     public async Task<string?> NominateAsync(int topicId, string? name, string? neighborhood, string userId)
     {

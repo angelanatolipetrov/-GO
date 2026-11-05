@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BestInTown.Pages;
 
-public class IndexModel(VotingService svc, IConfiguration cfg, Loc L) : PageModel
+public class IndexModel(VotingService svc, PhotoStore photos, IConfiguration cfg, Loc L) : PageModel
 {
     public const string OtherChoice = "__other";
 
@@ -24,6 +24,7 @@ public class IndexModel(VotingService svc, IConfiguration cfg, Loc L) : PageMode
     [BindProperty] public string? Choice { get; set; }         // dropdown pick (catalog place name or "__other")
     [BindProperty] public string? Name { get; set; }
     [BindProperty] public string? Neighborhood { get; set; }
+    [BindProperty] public IFormFile? Photo { get; set; }
 
     public string? UserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
     private string Salt => cfg["Security:IpSalt"] ?? "change-me";
@@ -79,7 +80,25 @@ public class IndexModel(VotingService svc, IConfiguration cfg, Loc L) : PageMode
 
         var topic = await svc.GetCurrentTopicAsync();
         var error = await svc.NominateAsync(topic.Id, name, hood, UserId);
+        if (error == null && Photo != null && await svc.FindPlaceIdAsync(name) is int placeId)
+        {
+            var photoError = await photos.SaveAsync(placeId, Photo);
+            if (photoError != null) error = photoError == "err.photo.exists" ? null : "msg.nominated.noPhoto";
+        }
         TempData["Msg"] = L[error ?? "msg.nominated"];
+        return RedirectToPage(new { hood = Hood });
+    }
+
+    // Add a photo later to a place you nominated this week (only if it has none yet).
+    public async Task<IActionResult> OnPostPhotoAsync(int nominationId)
+    {
+        if (UserId is null) return LoginRedirect();
+        var topic = await svc.GetCurrentTopicAsync();
+        var placeId = await svc.OwnPlaceInTopicAsync(nominationId, topic.Id, UserId);
+        var error = placeId == null ? "err.nom.notfound"
+                  : Photo == null ? "err.photo.type"
+                  : await photos.SaveAsync(placeId.Value, Photo);
+        TempData["Msg"] = L[error ?? "msg.photo"];
         return RedirectToPage(new { hood = Hood });
     }
 

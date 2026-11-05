@@ -363,3 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 # Local SQLite database
 bestintown.db*
+
+# Place photos uploaded by users
+wwwroot/uploads/
