@@ -14,6 +14,7 @@
 <form method="post" class="stack" asp-route-returnUrl="@Model.ReturnUrl">
     <label asp-for="Email">@L["acct.email"]</label>
     <input asp-for="Email" type="email" autocomplete="email" required />
+    <input type="hidden" asp-for="TypoWarned" />
     <label asp-for="Password">@L["acct.password"]</label>
     <input asp-for="Password" type="password" autocomplete="new-password" required />
     <label asp-for="ConfirmPassword">@L["acct.confirm"]</label>

@@ -1,4 +1,3 @@
-using System.Net.Mail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -6,11 +5,12 @@ using BestInTown.Services;
 
 namespace BestInTown.Pages.Account;
 
-public class RegisterModel(UserManager<IdentityUser> users, SignInManager<IdentityUser> signIn, Loc L) : PageModel
+public class RegisterModel(UserManager<IdentityUser> users, SignInManager<IdentityUser> signIn, EmailChecker emails, Loc L) : PageModel
 {
     [BindProperty] public string? Email { get; set; }
     [BindProperty] public string? Password { get; set; }
     [BindProperty] public string? ConfirmPassword { get; set; }
+    [BindProperty] public string? TypoWarned { get; set; }   // address we already showed a "did you mean" hint for
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
     public List<string> Errors { get; set; } = new();
 
@@ -19,8 +19,19 @@ public class RegisterModel(UserManager<IdentityUser> users, SignInManager<Identi
     public async Task<IActionResult> OnPostAsync()
     {
         var email = Email?.Trim() ?? "";
-        if (!MailAddress.TryCreate(email, out var parsed) || parsed.Address != email) Errors.Add(L["err.email"]);
         if (Password != ConfirmPassword) Errors.Add(L["err.pw.mismatch"]);
+
+        var keptAfterHint = string.Equals(TypoWarned, email, StringComparison.OrdinalIgnoreCase);
+        var check = await emails.CheckAsync(email, keptAfterHint, HttpContext.RequestAborted);
+        if (check.Suggestion != null)
+        {
+            Errors.Add(L.Format(check.ErrorKey!, check.Suggestion, email));
+            TypoWarned = email;
+            Email = check.Suggestion;   // prefill the corrected address
+            ModelState.Remove(nameof(Email));
+            ModelState.Remove(nameof(TypoWarned));
+        }
+        else if (!check.Ok) Errors.Add(L[check.ErrorKey!]);
         if (Errors.Count > 0) return Page();
 
         var user = new IdentityUser { UserName = email, Email = email };

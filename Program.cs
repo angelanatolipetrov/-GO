@@ -11,6 +11,14 @@ builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<Loc>();
 builder.Services.AddScoped<VotingService>();
+builder.Services.AddSingleton<DnsClient.ILookupClient>(new DnsClient.LookupClient(new DnsClient.LookupClientOptions
+{
+    Timeout = TimeSpan.FromSeconds(3),
+    Retries = 1,
+    UseCache = true,
+    ThrowDnsErrors = false,
+}));
+builder.Services.AddSingleton<EmailChecker>();
 builder.Services.AddDbContext<AppDb>(o =>
     o.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=bestintown.db"));
 
@@ -58,7 +66,7 @@ app.Use(async (ctx, next) =>
     h["X-Content-Type-Options"] = "nosniff";
     h["X-Frame-Options"] = "DENY";
     h["Referrer-Policy"] = "same-origin";
-    h["Content-Security-Policy"] = "default-src 'self'; style-src 'self' 'unsafe-inline'";
+    h["Content-Security-Policy"] = "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com";
     await next();
 });
 
