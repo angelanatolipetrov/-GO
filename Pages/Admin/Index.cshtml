@@ -12,6 +12,23 @@
     <button type="submit">@L["admin.save"]</button>
 </form>
 
+<h2>@L["admin.cover"]</h2>
+@if (TempData["Msg"] is string err) { <div class="errors"><p>@L[err]</p></div> }
+<p class="muted">@L["admin.coverHint"]</p>
+@if (Photos.TopicUrl(Model.Topic.Id) is string cover)
+{
+    <p><img src="@cover" alt="" class="cover-preview" /></p>
+    <form method="post" asp-page-handler="DeleteCover" class="inline">
+        <input type="hidden" name="id" value="@Model.Topic.Id" />
+        <button type="submit">@L["admin.deleteCover"]</button>
+    </form>
+}
+<form method="post" enctype="multipart/form-data" asp-page-handler="Cover" class="inline">
+    <input type="hidden" name="id" value="@Model.Topic.Id" />
+    <input type="file" name="cover" accept="image/jpeg,image/png,image/webp" required />
+    <button type="submit" class="primary">@L["admin.uploadCover"]</button>
+</form>
+
 <h2>@L["admin.noms"]</h2>
 @if (Model.Rows.Count == 0) { <p class="muted">@L["admin.none"]</p> }
 <ol class="rows">

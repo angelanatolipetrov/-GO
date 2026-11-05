@@ -22,6 +22,19 @@ public class IndexModel(VotingService svc, PhotoStore photos) : PageModel
         return RedirectToPage();
     }
 
+    public async Task<IActionResult> OnPostCoverAsync(int id, IFormFile? cover)
+    {
+        var error = await photos.SaveTopicAsync(id, cover);
+        if (error != null) TempData["Msg"] = error;
+        return RedirectToPage();
+    }
+
+    public IActionResult OnPostDeleteCover(int id)
+    {
+        photos.DeleteTopic(id);
+        return RedirectToPage();
+    }
+
     public IActionResult OnPostDeletePhoto(int placeId)
     {
         photos.Delete(placeId);

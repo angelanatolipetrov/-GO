@@ -19,6 +19,7 @@ public class IndexModel(VotingService svc, PhotoStore photos, IConfiguration cfg
     public int Total { get; set; }
     public int? MyVote { get; set; }
     public GuideEntry? LastWinner { get; set; }
+    public string? CoverUrl { get; set; }   // topic cover from /Admin, else the leader's photo
 
     [BindProperty(SupportsGet = true, Name = "hood")] public string? Hood { get; set; }
     [BindProperty] public string? Choice { get; set; }         // dropdown pick (catalog place name or "__other")
@@ -42,6 +43,9 @@ public class IndexModel(VotingService svc, PhotoStore photos, IConfiguration cfg
 
         MyVote = await svc.MyVoteAsync(Topic.Id, UserId);
         LastWinner = await svc.LastWinnerAsync();
+        CoverUrl = photos.TopicUrl(Topic.Id)
+                   ?? all.Where(r => r.Votes > 0).Select(r => photos.Url(r.PlaceId)).FirstOrDefault(u => u != null)
+                   ?? all.Select(r => photos.Url(r.PlaceId)).FirstOrDefault(u => u != null);
     }
 
     public async Task<IActionResult> OnPostVoteAsync(int nominationId)

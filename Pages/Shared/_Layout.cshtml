@@ -7,19 +7,26 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#13293d" />
+    <meta name="theme-color" content="#121418" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@600;700;800&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&display=swap" />
     <title>@ViewData["Title"] – @L["site.name"]</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
+    @{
+        var path = req.Path.Value ?? "/";
+        string On(string p) => path.Equals(p, StringComparison.OrdinalIgnoreCase) || (p == "/" && path == "/Index") ? "on" : "";
+    }
     <header class="top"><div class="top-in">
-        <a class="brand" asp-page="/Index">@L["site.name"]</a>
+        <a class="brand" asp-page="/Index">
+            <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.5 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg></span>
+            <span>@L["site.name"]</span>
+        </a>
         <nav class="menu">
-            <a asp-page="/Index">@L["nav.week"]</a>
-            <a asp-page="/Guide">@L["nav.guide"]</a>
+            <a asp-page="/Index" class="@On("/")">@L["nav.week"]</a>
+            <a asp-page="/Guide" class="@On("/Guide")">@L["nav.guide"]</a>
         </nav>
         <div class="tools">
             <span class="lang">
@@ -27,9 +34,9 @@
             </span>
             @if (User.Identity?.IsAuthenticated == true)
             {
-                <span class="muted">@User.Identity.Name</span>
+                <span class="who">@User.Identity.Name</span>
                 <form method="post" asp-page="/Account/Logout" class="inline">
-                    <button type="submit" class="linkbtn">@L["nav.logout"]</button>
+                    <button type="submit" class="linkbtn out">@L["nav.logout"]</button>
                 </form>
             }
             else
@@ -39,6 +46,18 @@
             }
         </div>
     </div></header>
+
+    <nav class="rail" aria-label="@L["site.name"]">
+        <a asp-page="/Index" class="@On("/")" title="@L["nav.week"]" aria-label="@L["nav.week"]">
+            <svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></a>
+        <a asp-page="/Guide" class="@On("/Guide")" title="@L["nav.guide"]" aria-label="@L["nav.guide"]">
+            <svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg></a>
+        <a href="/#nominate" title="@L["nav.nominate"]" aria-label="@L["nav.nominate"]">
+            <svg viewBox="0 0 24 24"><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="9"/></svg></a>
+        <a asp-page="@(User.Identity?.IsAuthenticated == true ? "/Index" : "/Account/Login")" title="@L["nav.account"]" aria-label="@L["nav.account"]" class="@On("/Account/Login")">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></a>
+    </nav>
+
     <main class="wrap">@RenderBody()</main>
     <footer class="foot">@L["footer"]</footer>
     <script src="~/js/site.js" asp-append-version="true" defer></script>

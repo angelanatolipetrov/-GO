@@ -1,33 +1,43 @@
 namespace BestInTown.Services;
 
-// One photo per place, saved as wwwroot/uploads/places/{placeId}.jpg|png|webp.
-// No database column needed, so existing databases keep working.
+// One photo per place (wwwroot/uploads/places/{id}.jpg|png|webp) and one cover per weekly topic
+// (wwwroot/uploads/topics/{id}.*). No database column needed, so existing databases keep working.
 public class PhotoStore(IWebHostEnvironment env, ILogger<PhotoStore> log)
 {
     public const long MaxBytes = 5 * 1024 * 1024;
     private static readonly string[] Exts = { ".jpg", ".png", ".webp" };
 
-    private string Dir => Path.Combine(env.WebRootPath, "uploads", "places");
+    private const string Places = "places", Topics = "topics";
+    private string Dir(string kind) => Path.Combine(env.WebRootPath, "uploads", kind);
 
-    public string? Url(int placeId)
+    public string? Url(int placeId) => UrlOf(Places, placeId);
+    public bool Has(int placeId) => HasOf(Places, placeId);
+    public Task<string?> SaveAsync(int placeId, IFormFile? file) => SaveOf(Places, placeId, file, replace: false);
+    public void Delete(int placeId) => DeleteOf(Places, placeId);
+
+    public string? TopicUrl(int topicId) => UrlOf(Topics, topicId);
+    public Task<string?> SaveTopicAsync(int topicId, IFormFile? file) => SaveOf(Topics, topicId, file, replace: true);
+    public void DeleteTopic(int topicId) => DeleteOf(Topics, topicId);
+
+    private string? UrlOf(string kind, int id)
     {
         foreach (var ext in Exts)
         {
-            var path = Path.Combine(Dir, placeId + ext);
+            var path = Path.Combine(Dir(kind), id + ext);
             if (File.Exists(path))
-                return $"/uploads/places/{placeId}{ext}?v={File.GetLastWriteTimeUtc(path).Ticks}";
+                return $"/uploads/{kind}/{id}{ext}?v={File.GetLastWriteTimeUtc(path).Ticks}";
         }
         return null;
     }
 
-    public bool Has(int placeId) => Exts.Any(e => File.Exists(Path.Combine(Dir, placeId + e)));
+    private bool HasOf(string kind, int id) => Exts.Any(e => File.Exists(Path.Combine(Dir(kind), id + e)));
 
-    // Returns null on success or a Loc key. Keeps an existing photo (first photo wins).
-    public async Task<string?> SaveAsync(int placeId, IFormFile? file)
+    // Returns null on success or a Loc key. replace=false keeps an existing photo (first photo wins).
+    private async Task<string?> SaveOf(string kind, int id, IFormFile? file, bool replace)
     {
         if (file == null || file.Length == 0) return null;
         if (file.Length > MaxBytes) return "err.photo.size";
-        if (Has(placeId)) return "err.photo.exists";
+        if (!replace && HasOf(kind, id)) return "err.photo.exists";
 
         // Trust the file's first bytes, not its name or the browser's content type.
         var head = new byte[12];
@@ -50,8 +60,9 @@ public class PhotoStore(IWebHostEnvironment env, ILogger<PhotoStore> log)
         };
         if (ext == null) return "err.photo.type";
 
-        Directory.CreateDirectory(Dir);
-        var final = Path.Combine(Dir, placeId + ext);
+        Directory.CreateDirectory(Dir(kind));
+        if (replace) DeleteOf(kind, id);
+        var final = Path.Combine(Dir(kind), id + ext);
         var temp = final + ".tmp";
         try
         {
@@ -61,15 +72,15 @@ public class PhotoStore(IWebHostEnvironment env, ILogger<PhotoStore> log)
         }
         catch (IOException ex)
         {
-            log.LogWarning(ex, "Could not save photo for place {PlaceId}", placeId);
+            log.LogWarning(ex, "Could not save {Kind} photo {Id}", kind, id);
             File.Delete(temp);
-            return Has(placeId) ? "err.photo.exists" : "err.generic";
+            return HasOf(kind, id) ? "err.photo.exists" : "err.generic";
         }
         return null;
     }
 
-    public void Delete(int placeId)
+    private void DeleteOf(string kind, int id)
     {
-        foreach (var ext in Exts) File.Delete(Path.Combine(Dir, placeId + ext));
+        foreach (var ext in Exts) File.Delete(Path.Combine(Dir(kind), id + ext));
     }
 }
