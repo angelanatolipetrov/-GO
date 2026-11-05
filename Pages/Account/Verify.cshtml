@@ -5,6 +5,10 @@
 <h1>@L["verify.h"]</h1>
 
 @if (TempData["Msg"] is string msg) { <p class="msg">@msg</p> }
+@if (TempData.Peek("DevCode") is string devCode)
+{
+    <p class="msg">@L["verify.dev"] <strong class="devcode">@devCode</strong></p>
+}
 @if (Model.Error != null) { <div class="errors"><p>@Model.Error</p></div> }
 
 <p>@L.Format("verify.sub", Model.Email ?? "")</p>

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace BestInTown.Services;
 
@@ -9,7 +10,8 @@ public enum CodeResult { Ok, Wrong, Expired, LockedOut }
 
 // 6-digit email verification codes. Only a hash is stored (in AspNetUserTokens), never the code itself.
 // Wrong guesses count towards Identity's lockout (5 tries, then 10 minutes), so codes can't be brute-forced.
-public class EmailCodes(UserManager<IdentityUser> users, EmailSender mail, Loc L)
+public class EmailCodes(UserManager<IdentityUser> users, EmailSender mail, Loc L,
+                        IWebHostEnvironment env, IHttpContextAccessor http, ITempDataDictionaryFactory tempData)
 {
     public static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan ResendAfter = TimeSpan.FromSeconds(60);
@@ -28,6 +30,10 @@ public class EmailCodes(UserManager<IdentityUser> users, EmailSender mail, Loc L
 
         await mail.SendAsync(user.Email!, L.Format("verify.mail.subject", code),
             L.Format("verify.mail.body", code, (int)Lifetime.TotalMinutes));
+
+        // Testing on your own PC without email set up: show the code on the confirmation page.
+        if (!mail.IsConfigured && env.IsDevelopment() && http.HttpContext is { } ctx)
+            tempData.GetTempData(ctx)["DevCode"] = code;
         return true;
     }
 

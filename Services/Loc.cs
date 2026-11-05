@@ -106,6 +106,7 @@ public class Loc(IHttpContextAccessor accessor)
         ["verify.h"] = ("Потвърдете имейла си", "Confirm your email"),
         ["verify.sub"] = ("Изпратихме 6-цифрен код на {0}. Въведете го тук, за да активирате профила си.", "We sent a 6-digit code to {0}. Enter it here to activate your account."),
         ["verify.code"] = ("Код от имейла", "Code from the email"),
+        ["verify.dev"] = ("Тестов режим – изпращането на имейли не е настроено. Вашият код е:", "Test mode – email sending isn't set up. Your code is:"),
         ["verify.btn"] = ("Потвърди", "Confirm"),
         ["verify.noMail"] = ("Не получихте имейл? Проверете папка „Спам“ или", "No email? Check your spam folder or"),
         ["verify.resend"] = ("изпратете нов код", "send a new code"),

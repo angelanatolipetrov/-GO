@@ -7,6 +7,8 @@ namespace BestInTown.Services;
 // With no Smtp:Host set (local development), the message is written to the log instead of sent.
 public class EmailSender(IConfiguration cfg, ILogger<EmailSender> log)
 {
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(cfg["Smtp:Host"]);
+
     public async Task SendAsync(string to, string subject, string body)
     {
         var s = cfg.GetSection("Smtp");
