@@ -7,26 +7,22 @@
     var req = ViewContext.HttpContext.Request;
     var back = req.Path.Value + req.QueryString.Value;
     var rank = 0;
+    var maxVotes = Model.Rows.Count == 0 ? 0 : Model.Rows.Max(r => r.Votes);
     var endIso = Model.Topic.EndsOn.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
 }
 
 @if (TempData["Msg"] is string msg) { <p class="msg">@msg</p> }
 
 <section class="hero">
-    <p class="eyebrow">@L["nav.week"]</p>
     <h1>@title</h1>
-    <div class="hero-meta">
-        <span class="chip">@L["home.endsIn"] <b data-countdown="@endIso" data-d="@L["unit.d"]" data-h="@L["unit.h"]" data-m="@L["unit.m"]"></b></span>
-        <span class="chip"><b>@Model.Total</b> @L["votes"]</span>
-        <span class="chip"><b>@Model.Rows.Count</b> @L["home.places"]</span>
-    </div>
+    <p>@L["home.endsIn"] <b data-countdown="@endIso" data-d="@L["unit.d"]" data-h="@L["unit.h"]" data-m="@L["unit.m"]"></b>. <b>@Model.Total</b> @L["votes"], <b>@Model.Rows.Count</b> @L["home.places"].</p>
     <p class="muted">@L.Format("home.closes", Model.Topic.EndsOn.AddDays(-1).ToString("d MMMM yyyy", L.Culture))</p>
-    <button type="button" class="btn ghost" data-share data-title="@title" data-copied="@L["share.copied"]">@L["share.btn"]</button>
+    <div class="actions"><button type="button" class="ghost" data-share data-title="@title" data-copied="@L["share.copied"]">@L["share.btn"]</button></div>
 </section>
 
 @if (Model.LastWinner is { Top.Count: > 0 } lw)
 {
-    <p class="winner">@L["home.lastWinner"] – <i>@L.Pick(lw.Title, lw.TitleEn)</i>: <b>@lw.Top[0].Name</b></p>
+    <p class="winner">@L["home.lastWinner"] (@L.Pick(lw.Title, lw.TitleEn)): <b>@lw.Top[0].Name</b></p>
 }
 
 @if (Model.Neighborhoods.Count > 0)
@@ -51,13 +47,12 @@ else
     @foreach (var r in Model.Rows)
     {
         rank++;
-        var pct = Model.Total == 0 ? 0 : r.Votes * 100 / Model.Total;
+        var pct = maxVotes == 0 ? 0 : r.Votes * 100 / maxVotes;
         var isTop = r.Votes > 0 && rank <= 3;
         <li class="row @(Model.MyVote == r.NominationId ? "mine" : "") @(isTop ? "top" : "")">
             <div class="rank">@rank</div>
             <div>
-                <div class="name"><strong>@r.Name</strong>@if (!string.IsNullOrEmpty(r.Neighborhood)) { <span class="chip small">@r.Neighborhood</span> }</div>
-                <div class="bar"><span style="width:@pct%"></span></div>
+                <div class="name" style="--share:@pct%"><strong>@r.Name</strong>@if (!string.IsNullOrEmpty(r.Neighborhood)) { <span class="hood">@r.Neighborhood</span> }</div>
             </div>
             <form method="post" class="vote" asp-page-handler="Vote" asp-route-hood="@Model.Hood">
                 <input type="hidden" name="nominationId" value="@r.NominationId" />

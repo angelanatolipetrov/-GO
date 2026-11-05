@@ -60,7 +60,7 @@ public class Loc(IHttpContextAccessor accessor)
         ["unit.d"] = ("д", "d"),
         ["unit.h"] = ("ч", "h"),
         ["unit.m"] = ("мин", "min"),
-        ["footer"] = ("Правено с любов от местни за местни", "Made with love by locals, for locals"),
+        ["footer"] = ("Бургас. Нова тема всеки понеделник.", "Burgas. A new topic every Monday."),
         ["guide.winner"] = ("Победител", "Winner"),
         // messages
         ["msg.voted"] = ("Гласът ви е приет!", "Your vote has been counted!"),

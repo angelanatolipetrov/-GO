@@ -14,15 +14,16 @@
 @foreach (var e in Model.Entries)
 {
     var i = 0;
-    <section class="card" style="margin-bottom:1rem">
-        <h2>@L.Pick(e.Title, e.TitleEn) <span class="chip small">@e.EndsOn.AddDays(-1).ToString("MMM yyyy", L.Culture)</span></h2>
+    <section class="week">
+        <h2>@L.Pick(e.Title, e.TitleEn)</h2>
+        <p class="when">@e.EndsOn.AddDays(-7).ToString("d MMM", L.Culture) – @e.EndsOn.AddDays(-1).ToString("d MMM yyyy", L.Culture)</p>
         <ol class="podium">
             @foreach (var r in e.Top)
             {
                 <li>
                     <span class="rank">@(++i)</span>
                     <strong>@r.Name</strong>
-                    @if (!string.IsNullOrEmpty(r.Neighborhood)) { <span class="chip small">@r.Neighborhood</span> }
+                    @if (!string.IsNullOrEmpty(r.Neighborhood)) { <span class="hood">@r.Neighborhood</span> }
                     <span class="count">@r.Votes @L["votes"]</span>
                 </li>
             }
